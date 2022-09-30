@@ -1,0 +1,26 @@
+.container {
+  width: 540px;
+  background-color: transparent;
+  padding: 90px 0;
+}
+
+@media (max-width: 455px) {
+  .container {
+    width: 325px;
+    padding: 10px 0;
+  }
+}
+
+@media (max-width: 375px) {
+  .container {
+    width: 325px;
+    padding: 2px 0;
+  }
+}
+
+@media (max-width: 320px) {
+  .container {
+    width: 295px;
+    padding: 0px 0;
+  }
+}
