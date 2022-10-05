@@ -12,103 +12,93 @@ function App() {
 
   const { setTheme } = useTheme();
   const [currentResult, setCurrentResult] = useState('0');
-  const [isCalculated, setIsCalculated] = useState(false);
+  const [var1, setVar1] = useState('');
+  const [var2, setVar2] = useState('');
+  const [isMathOperator, setIsMathOperator] = useState(false);
 
-
-  const calcResult = () => {
-    let result = null;
-    let errorMessage = null;
-    try {
-      result = Mexp.eval(currentResult);
-    } catch (error) {
-      errorMessage = error.message;
-
-    }
-
-    if (!isFinite(result)) {
-      setCurrentResult(`Error:: ${errorMessage ? errorMessage : "Dividing by ZERO "}`);
-    } else if (result === undefined || errorMessage !== null || isNaN(result)) {
-      setCurrentResult(`Error:: ${errorMessage ? errorMessage : "Try again."}`);
-    } else {
-      if (result.toString().length > 14) {
-        setCurrentResult(result.toFixed(13));
-      } else {
-        setCurrentResult(result);
-      }
-
-    }
-    setIsCalculated(true);
-  }
+  const numbersArray = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+  const mathSigns = ['+', '-', '/', 'x'];
 
   const clickBtnHandler = (data) => {
+    if ((numbersArray.indexOf(data) !== -1) && !isMathOperator) {
+      if (currentResult === '0' && data !== '.') {
+        setCurrentResult(data);
+      } else {
+        if (currentResult.length < 12) {
+          setCurrentResult(currentResult + data)
+        }
+      }
 
-    switch (data) {
-      case 'RESET':
-        setIsCalculated(false);
-        setCurrentResult('0');
-        break;
+    } else if ((numbersArray.indexOf(data) !== -1) && isMathOperator) {
+      if (data === '.') {
+        setCurrentResult('0' + data);
+        setIsMathOperator(false)
+      } else {
+        setCurrentResult(data);
+        setIsMathOperator(false)
+      }
+    }
 
-      case 'DEL':
-        setIsCalculated(false);
-        if ((currentResult.toString().length > 1) && (currentResult.includes('Error') !== true)) {
-          setCurrentResult(currentResult.toString().slice(0, currentResult.toString().length - 1));
+    if (mathSigns.indexOf(data) !== -1) {
+      setIsMathOperator(true);
+      setVar1(currentResult);
+      if (data === 'x') {
+        data = '*';
+      }
+      setVar2(data);
+      setCurrentResult(data);
+    }
+
+    if (data === '.') {
+      if (currentResult === '0' || (currentResult.indexOf('.') === -1)) {
+        setCurrentResult(currentResult + data);
+      }
+    }
+
+    if (data === '=') {
+      let result = null;
+      let errorMessage = null;
+      setIsMathOperator(false)
+      try {
+        result = Mexp.eval(`${var1}${var2}${currentResult}`);
+      } catch (error) {
+        errorMessage = error.message;
+      }
+
+      if (!isFinite(result)) {
+        setCurrentResult(`Error:: ${errorMessage ? errorMessage : result}`);
+      } else if (result === undefined || errorMessage !== null || isNaN(result)) {
+        setCurrentResult(`Error:: ${errorMessage ? errorMessage : "Try again."}`);
+      } else {
+        if (result.toString().length > 14) {
+          setCurrentResult(result.toFixed(5));
+          // setCurrentResult('too long string..');
+          console.log(result)
+
         } else {
-          setCurrentResult('0');
+          setCurrentResult(result);
         }
-        break;
 
-      case '.':
-        if (currentResult.length !== 14) {
-          setCurrentResult(currentResult + ',')
-        }
-        break;
+      }
+    }
 
-      case '+':
-        setIsCalculated(false);
-        if (currentResult[currentResult.length - 1] !== '+') {
-          setCurrentResult(currentResult + data);
-        }
-        break;
+    if (data === 'RESET') {
+      setIsMathOperator(false);
+      setCurrentResult('0');
+      setVar1('');
+      setVar2('');
+    }
 
-      case '-':
-        setIsCalculated(false);
-        if (currentResult === '0') {
-          setCurrentResult(data);
-        } else if (currentResult[currentResult.length - 1] !== '-') {
-          setCurrentResult(currentResult + data);
-        }
-        break;
-      case '/':
-        setIsCalculated(false);
-        if (currentResult[currentResult.length - 1] !== '/') {
-          setCurrentResult(currentResult + data);
-        }
-        break;
-      case 'x':
-        setIsCalculated(false);
-        setCurrentResult(currentResult + '*');
-        break;
-      case '=':
-        calcResult();
-        break;
-      default:
-        if (currentResult.length < 15) {
-          if (isCalculated == true) {
-            setIsCalculated(false);
-            setCurrentResult(data);
-
-          } else if (currentResult === '0') {
-            setCurrentResult(data)
-          } else {
-            setCurrentResult(currentResult + data)
-          }
-        }
-        break;
+    if (data === 'DEL') {
+      if ((currentResult.toString().length > 1) && (currentResult.toString().includes('Error') !== true)) {
+        setCurrentResult(currentResult.toString().slice(0, currentResult.toString().length - 1));
+      } else {
+        setCurrentResult('0');
+      }
     }
   }
 
   return (
-
     <MainWrapper>
 
       <header>
@@ -120,9 +110,7 @@ function App() {
         <Keypad clickBtnHandler={clickBtnHandler} />
       </main>
 
-
     </MainWrapper>
-
   );
 }
 
